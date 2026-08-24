@@ -173,10 +173,10 @@
                 Código del Admin
             </div>
             <p style="color: #666; font-size: 13px; margin-bottom: 15px;">
-                El admin está mostrando 4 dígitos en pantalla grande.<br>
-                <strong style="color: #9C27B0;">El admin te dirá el código. Escribe los 4 dígitos:</strong>
+                El admin está mostrando 6 dígitos en pantalla grande.<br>
+                <strong style="color: #9C27B0;">El admin te dirá el código. Escribe los 6 dígitos:</strong>
             </p>
-            <input type="text" id="pinInput" placeholder="0000" maxlength="4" oninput="validarPIN()">
+            <input type="text" id="pinInput" placeholder="000000" maxlength="6" oninput="validarPIN()">
             <div id="pinMessage"></div>
             <button class="btn btn-primary" onclick="irPaso2()">SIGUIENTE →</button>
         </div>
@@ -228,6 +228,7 @@
         </div>
     </div>
 
+    <script src="otpauth.umd.min.js"></script>
     <script src="crew-pin-sheets.js"></script>
     <script>
         let pasoActual = 1;

@@ -7,6 +7,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#9C27B0">
     <link rel="icon" type="image/png" href="icon-192x192.png">
+    <script src="otpauth.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -49,15 +50,24 @@
             letter-spacing: 8px;
             font-family: 'Courier New', monospace;
             margin: 15px 0;
-            animation: pulse 1s infinite;
         }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
+        .timer-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+        .timer-fill {
+            height: 100%;
+            background: white;
+            transition: width 1s linear;
         }
         .timer-info {
             font-size: 12px;
             opacity: 0.9;
+            margin-top: 10px;
         }
         .btn {
             width: 100%;
@@ -104,7 +114,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔐 Código Dinámico</h1>
+            <h1>🔐 Código Google Authenticator</h1>
             <p>Control de Acceso ETG</p>
         </div>
 
@@ -115,12 +125,15 @@
 
         <div class="pin-display">
             <div class="pin-label">CÓDIGO VÁLIDO ACTUAL</div>
-            <div class="pin-code" id="pinCode">----</div>
-            <div class="timer-info">Cambia cada 30 segundos</div>
+            <div class="pin-code" id="pinCode">------</div>
+            <div class="timer-bar">
+                <div class="timer-fill" id="timerFill" style="width: 100%;"></div>
+            </div>
+            <div class="timer-info" id="timerText">30 segundos restantes</div>
         </div>
 
         <div class="info-box">
-            💡 <strong>Dale este código al crew:</strong> Lee el número en voz alta o muéstraselo en pantalla.
+            💡 <strong>Dale este código al crew:</strong> Este es el MISMO código que ves en tu app Google Authenticator. Funciona en cualquier dispositivo.
         </div>
 
         <button class="btn btn-primary" onclick="copiarCodigo()">📋 Copiar Código</button>
@@ -128,6 +141,10 @@
     </div>
 
     <script>
+        const SECRET_BASE32 = 'JBSWY3DPEBLW64TMMQ';
+        let codigoActual = '';
+        let totp = null;
+
         window.addEventListener('DOMContentLoaded', () => {
             const adminLoggedIn = localStorage.getItem('adminLoggedIn');
             if (!adminLoggedIn) {
@@ -135,22 +152,40 @@
                 return;
             }
 
-            generarCodigo();
-            setInterval(generarCodigo, 30000);
-            console.log('✅ Admin cargado');
+            totp = new OTPAuth.TOTP({
+                issuer: 'ETG',
+                label: 'Admin',
+                algorithm: 'SHA1',
+                digits: 6,
+                period: 30,
+                secret: OTPAuth.Secret.fromBase32(SECRET_BASE32)
+            });
+
+            actualizarCodigo();
+            setInterval(actualizarCodigo, 1000);
+            console.log('✅ Admin TOTP cargado con otpauth (compatible Google Authenticator)');
         });
 
-        function generarCodigo() {
-            const codigo = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
-            document.getElementById('pinCode').textContent = codigo;
-            localStorage.setItem('codigoTOTP', codigo);
-            console.log('✅ Código:', codigo);
+        function actualizarCodigo() {
+            try {
+                codigoActual = totp.generate();
+                document.getElementById('pinCode').textContent = codigoActual;
+
+                const epoch = Math.floor(Date.now() / 1000);
+                const segundosRestantes = 30 - (epoch % 30);
+                const porcentaje = (segundosRestantes / 30) * 100;
+
+                document.getElementById('timerFill').style.width = porcentaje + '%';
+                document.getElementById('timerText').textContent = segundosRestantes + ' segundos restantes';
+            } catch (error) {
+                console.error('❌ Error generando TOTP:', error);
+                document.getElementById('pinCode').textContent = 'ERROR';
+            }
         }
 
         function copiarCodigo() {
-            const codigo = document.getElementById('pinCode').textContent;
-            navigator.clipboard.writeText(codigo).then(() => {
-                alert('✅ Código copiado: ' + codigo);
+            navigator.clipboard.writeText(codigoActual).then(() => {
+                alert('✅ Código copiado: ' + codigoActual);
             });
         }
 
