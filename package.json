@@ -1,0 +1,6 @@
+{
+  "name": "etg-asistencia",
+  "version": "1.0.0",
+  "description": "Sistema de asistencia ETG",
+  "main": "admin.html"
+}

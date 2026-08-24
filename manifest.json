@@ -1,0 +1,66 @@
+{
+  "name": "ETG Asistencia - Sistema de Auditoría",
+  "short_name": "ETG",
+  "description": "Sistema de auditoría con PIN dinámico para control de asistencia del equipo ETG - Sebastián Yatra",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#9C27B0",
+  "icons": [
+    {
+      "src": "icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["productivity", "business"],
+  "shortcuts": [
+    {
+      "name": "Registrar Asistencia",
+      "short_name": "Registro",
+      "description": "Acceso rápido para registrar entrada/salida",
+      "url": "/crew.html",
+      "icons": [
+        {
+          "src": "icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Panel Admin",
+      "short_name": "Admin",
+      "description": "Acceso al panel de administración",
+      "url": "/admin.html",
+      "icons": [
+        {
+          "src": "icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ]
+}
