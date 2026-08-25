@@ -187,7 +187,8 @@
                 <span class="num">2</span>
                 Tus Datos
             </div>
-            <input type="text" id="nombreInput" placeholder="Tu nombre completo" oninput="autocompletarCargo()">
+            <input type="text" id="nombreInput" list="listaCrew" placeholder="Tu nombre completo" oninput="autocompletarCargo()" autocomplete="off">
+            <datalist id="listaCrew"></datalist>
             <div class="cargo-display" id="cargoDisplay">Tu cargo</div>
             <button class="btn btn-secondary" onclick="irPaso1()">← Atrás</button>
             <button class="btn btn-primary" onclick="irPaso3()">SIGUIENTE →</button>
@@ -230,6 +231,8 @@
 
     <script src="otpauth.umd.min.js"></script>
     <script src="crew-pin-sheets.js"></script>
+    <script src="google-config.js"></script>
+    <script src="sheets-sync.js"></script>
     <script>
         let pasoActual = 1;
         const cargos = {
@@ -260,11 +263,40 @@
             "Steven Baquero": "GUITARRA 2"
         };
 
+        function normalizar(txt) {
+            return txt
+                .trim()
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '');
+        }
+
+        // Mapa normalizado: "sebastian caro" -> "ADMIN ASSIST"
+        const cargosNormalizados = {};
+        Object.keys(cargos).forEach(nombre => {
+            cargosNormalizados[normalizar(nombre)] = { nombreOriginal: nombre, cargo: cargos[nombre] };
+        });
+
         function autocompletarCargo() {
-            const nombre = document.getElementById('nombreInput').value.trim();
-            const cargo = cargos[nombre] || 'Tu cargo';
-            document.getElementById('cargoDisplay').textContent = cargo;
-            console.log('Buscando:', nombre, '→ Cargo:', cargo);
+            const valorInput = document.getElementById('nombreInput').value;
+            const nombreNormalizado = normalizar(valorInput);
+            const match = cargosNormalizados[nombreNormalizado];
+
+            if (match) {
+                document.getElementById('cargoDisplay').textContent = match.cargo;
+            } else {
+                document.getElementById('cargoDisplay').textContent = 'Tu cargo';
+            }
+        }
+
+        function llenarSugerenciasNombres() {
+            const datalist = document.getElementById('listaCrew');
+            datalist.innerHTML = '';
+            Object.keys(cargos).forEach(nombre => {
+                const option = document.createElement('option');
+                option.value = nombre;
+                datalist.appendChild(option);
+            });
         }
 
         function actualizarPasos() {
@@ -291,25 +323,53 @@
             actualizarPasos();
         }
 
+        let fotoBase64 = null;
+
         function mostrarFoto() {
             const input = document.getElementById('fotoInput');
             const preview = document.getElementById('photoPreview');
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    preview.innerHTML = `<img src="${e.target.result}" alt="Foto">`;
+                    fotoBase64 = e.target.result;
+                    preview.innerHTML = `<img src="${fotoBase64}" alt="Foto">`;
                 };
                 reader.readAsDataURL(input.files[0]);
             }
         }
 
-        function enviarRegistro() {
-            alert('✅ Registro enviado correctamente');
+        async function enviarRegistro() {
+            const boton = document.querySelector('#step4 .btn-primary');
+            const textoOriginal = boton.textContent;
+            boton.disabled = true;
+            boton.textContent = '⏳ Enviando...';
+
+            const ahora = new Date();
+            const registro = {
+                nombre: document.getElementById('nombreInput').value || '-',
+                cargo: document.getElementById('cargoDisplay').textContent || '-',
+                tipo: 'entrada',
+                fecha: ahora.toISOString().split('T')[0],
+                hora: ahora.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+                pinValido: true,
+                fotoBase64: fotoBase64,
+                dispositivo: navigator.userAgent.substring(0, 100)
+            };
+
+            const resultado = await sheetSync.enviarRegistro(registro);
+
+            if (resultado.ok) {
+                alert('✅ Registro enviado y guardado en Google Sheets');
+            } else {
+                alert('⚠️ Sin conexión ahora mismo. Tu registro quedó guardado y se enviará automáticamente cuando haya señal.');
+            }
+
             setTimeout(() => window.location.href = 'index.html', 1000);
         }
 
         window.addEventListener('DOMContentLoaded', () => {
             actualizarPasos();
+            llenarSugerenciasNombres();
             console.log('✅ Crew cargado - Cargos disponibles:', Object.keys(cargos).length);
         });
     </script>

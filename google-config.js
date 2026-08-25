@@ -9,6 +9,11 @@ const GOOGLE_CONFIG = {
     // ========== GOOGLE SHEETS ==========
     SHEET_ID: '1gfxEi2LpeSmHxq2DBfSWjvmX04kktM5xAP9yfFqnD4k',
     SHEET_NAME: 'ETG-Asistencia-Querétaro',
+
+    // ========== APPS SCRIPT (puente para guardar de verdad) ==========
+    // Pega aquí la URL que te da Google al implementar el Apps Script
+    // (ver instrucciones en Code.gs / mensaje de Claude)
+    APPS_SCRIPT_URL: 'PEGA_AQUI_TU_URL_DE_APPS_SCRIPT',
     
     // ========== GOOGLE DRIVE ==========
     FOLDER_ID: '11imfIsHbc1rwkofA-2DuhkpbrVwQdDJo',  // Para subir fotos
