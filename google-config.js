@@ -13,7 +13,7 @@ const GOOGLE_CONFIG = {
     // ========== APPS SCRIPT (puente para guardar de verdad) ==========
     // Pega aquí la URL que te da Google al implementar el Apps Script
     // (ver instrucciones en Code.gs / mensaje de Claude)
-    APPS_SCRIPT_URL: 'PEGA_AQUI_TU_URL_DE_APPS_SCRIPT',
+    APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwYWqPP6YfUp3YQ78ZRjp3qtY18TXANcqO1ktB8PmK1pdF-MorwyaV5DW6SkvW74c8u/exec',
     
     // ========== GOOGLE DRIVE ==========
     FOLDER_ID: '11imfIsHbc1rwkofA-2DuhkpbrVwQdDJo',  // Para subir fotos
