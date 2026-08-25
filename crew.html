@@ -164,6 +164,7 @@
             <div class="step-badge" id="badge2">2</div>
             <div class="step-badge" id="badge3">3</div>
             <div class="step-badge" id="badge4">4</div>
+            <div class="step-badge" id="badge5">5</div>
         </div>
 
         <!-- PASO 1: PIN -->
@@ -181,40 +182,61 @@
             <button class="btn btn-primary" onclick="irPaso2()">SIGUIENTE →</button>
         </div>
 
-        <!-- PASO 2: DATOS -->
+        <!-- PASO 2: ENTRADA O SALIDA -->
         <div id="step2" class="step-content hidden">
             <div class="step-title">
                 <span class="num">2</span>
+                ¿Entrada o salida?
+            </div>
+            <p style="color: #666; font-size: 13px; margin-bottom: 20px;">
+                Selecciona qué estás registrando ahora:
+            </p>
+            <button type="button" class="btn tipo-btn" id="btnTipoEntrada" onclick="seleccionarTipo('entrada')" style="background: #e8f5e9; color: #2e7d32; border: 2px solid #4caf50;">
+                🟢 ENTRADA
+            </button>
+            <button type="button" class="btn tipo-btn" id="btnTipoSalida" onclick="seleccionarTipo('salida')" style="background: #ffebee; color: #c62828; border: 2px solid #f44336;">
+                🔴 SALIDA
+            </button>
+            <div id="tipoMessage" style="min-height: 20px; margin: 10px 0; text-align: center; font-size: 13px; font-weight: 600;"></div>
+            <button class="btn btn-secondary" onclick="irPaso1()">← Atrás</button>
+            <button class="btn btn-primary" onclick="irPaso3()">SIGUIENTE →</button>
+        </div>
+
+        <!-- PASO 3: DATOS -->
+        <div id="step3" class="step-content hidden">
+            <div class="step-title">
+                <span class="num">3</span>
                 Tus Datos
             </div>
             <input type="text" id="nombreInput" list="listaCrew" placeholder="Tu nombre completo" oninput="autocompletarCargo()" autocomplete="off">
             <datalist id="listaCrew"></datalist>
             <div class="cargo-display" id="cargoDisplay">Tu cargo</div>
-            <button class="btn btn-secondary" onclick="irPaso1()">← Atrás</button>
-            <button class="btn btn-primary" onclick="irPaso3()">SIGUIENTE →</button>
+            <button class="btn btn-secondary" onclick="irPaso2()">← Atrás</button>
+            <button class="btn btn-primary" onclick="irPaso4()">SIGUIENTE →</button>
         </div>
 
-        <!-- PASO 3: FOTO -->
-        <div id="step3" class="step-content hidden">
+        <!-- PASO 4: FOTO -->
+        <div id="step4" class="step-content hidden">
             <div class="step-title">
-                <span class="num">3</span>
+                <span class="num">4</span>
                 Tu Foto
             </div>
             <div class="photo-preview" id="photoPreview">
                 📷 Cámara frontal
             </div>
             <input type="file" id="fotoInput" accept="image/*" capture="user" onchange="mostrarFoto()">
-            <button class="btn btn-secondary" onclick="irPaso2()">← Atrás</button>
-            <button class="btn btn-primary" onclick="irPaso4()">SIGUIENTE →</button>
+            <button class="btn btn-secondary" onclick="irPaso3()">← Atrás</button>
+            <button class="btn btn-primary" onclick="irPaso5()">SIGUIENTE →</button>
         </div>
 
-        <!-- PASO 4: RESUMEN -->
-        <div id="step4" class="step-content hidden">
+        <!-- PASO 5: RESUMEN -->
+        <div id="step5" class="step-content hidden">
             <div class="step-title">
-                <span class="num">4</span>
+                <span class="num">5</span>
                 Confirmar y Enviar
             </div>
             <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <p><strong>Tipo:</strong> <span id="resumenTipo">-</span></p>
                 <p><strong>Nombre:</strong> <span id="resumenNombre">-</span></p>
                 <p><strong>Cargo:</strong> <span id="resumenCargo">-</span></p>
                 <p style="margin-top: 15px; color: #666; font-size: 12px;">
@@ -222,9 +244,9 @@
                     ✅ Código validado
                 </p>
             </div>
-            <button class="btn btn-secondary" onclick="irPaso3()">← Atrás</button>
-            <button class="btn btn-primary" onclick="enviarRegistro()" style="background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);">
-                ✅ REGISTRAR ENTRADA
+            <button class="btn btn-secondary" onclick="irPaso4()">← Atrás</button>
+            <button class="btn btn-primary" id="btnEnviarRegistro" onclick="enviarRegistro()" style="background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);">
+                ✅ REGISTRAR
             </button>
         </div>
     </div>
@@ -300,10 +322,27 @@
         }
 
         function actualizarPasos() {
-            for (let i = 1; i <= 4; i++) {
+            for (let i = 1; i <= 5; i++) {
                 document.getElementById(`step${i}`).classList.toggle('hidden', i !== pasoActual);
                 document.getElementById(`badge${i}`).classList.toggle('active', i <= pasoActual);
             }
+        }
+
+        let tipoSeleccionado = null;
+
+        function seleccionarTipo(tipo) {
+            tipoSeleccionado = tipo;
+            const btnEntrada = document.getElementById('btnTipoEntrada');
+            const btnSalida = document.getElementById('btnTipoSalida');
+            const mensaje = document.getElementById('tipoMessage');
+
+            btnEntrada.style.opacity = tipo === 'entrada' ? '1' : '0.4';
+            btnSalida.style.opacity = tipo === 'salida' ? '1' : '0.4';
+
+            mensaje.textContent = tipo === 'entrada'
+                ? '🟢 Vas a registrar tu ENTRADA'
+                : '🔴 Vas a registrar tu SALIDA';
+            mensaje.style.color = tipo === 'entrada' ? '#2e7d32' : '#c62828';
         }
 
         function irPaso1() { pasoActual = 1; actualizarPasos(); }
@@ -315,11 +354,21 @@
             pasoActual = 2;
             actualizarPasos();
         }
-        function irPaso3() { pasoActual = 3; actualizarPasos(); }
-        function irPaso4() {
-            pasoActual = 4;
+        function irPaso3() {
+            if (!tipoSeleccionado) {
+                alert('❌ Selecciona si es Entrada o Salida');
+                return;
+            }
+            pasoActual = 3;
+            actualizarPasos();
+        }
+        function irPaso4() { pasoActual = 4; actualizarPasos(); }
+        function irPaso5() {
+            pasoActual = 5;
+            document.getElementById('resumenTipo').textContent = tipoSeleccionado === 'entrada' ? '🟢 ENTRADA' : '🔴 SALIDA';
             document.getElementById('resumenNombre').textContent = document.getElementById('nombreInput').value || '-';
             document.getElementById('resumenCargo').textContent = document.getElementById('cargoDisplay').textContent || '-';
+            document.getElementById('btnEnviarRegistro').textContent = tipoSeleccionado === 'entrada' ? '✅ REGISTRAR ENTRADA' : '✅ REGISTRAR SALIDA';
             actualizarPasos();
         }
 
@@ -339,8 +388,7 @@
         }
 
         async function enviarRegistro() {
-            const boton = document.querySelector('#step4 .btn-primary');
-            const textoOriginal = boton.textContent;
+            const boton = document.getElementById('btnEnviarRegistro');
             boton.disabled = true;
             boton.textContent = '⏳ Enviando...';
 
@@ -348,7 +396,7 @@
             const registro = {
                 nombre: document.getElementById('nombreInput').value || '-',
                 cargo: document.getElementById('cargoDisplay').textContent || '-',
-                tipo: 'entrada',
+                tipo: tipoSeleccionado || 'entrada',
                 fecha: ahora.toISOString().split('T')[0],
                 hora: ahora.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
                 pinValido: true,

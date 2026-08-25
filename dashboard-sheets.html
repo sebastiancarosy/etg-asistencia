@@ -54,6 +54,15 @@
             color: #666;
             font-size: 14px;
         }
+        .info-box {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #2e7d32;
+        }
         .links {
             background: #f3e5f5;
             padding: 20px;
@@ -93,18 +102,14 @@
             <p>Querétaro 24-25 de Agosto 2026</p>
         </div>
 
+        <div class="info-box">
+            💡 Los registros de TODO el crew se guardan en tiempo real en tu Google Sheet (cada quien desde su propio celular). Este panel no calcula totales localmente para evitar mostrarte números incompletos — la fuente real y actualizada es el Sheet.
+        </div>
+
         <div class="stats">
             <div class="stat-card">
-                <div class="stat-value" id="statPresentes">0</div>
-                <div class="stat-label">👥 Presentes Hoy</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="statRegistros">0</div>
-                <div class="stat-label">📝 Total Registros</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="statValidados">0</div>
-                <div class="stat-label">✅ Códigos Validados</div>
+                <div class="stat-value" id="statLocal">0</div>
+                <div class="stat-label">📱 Registros hechos desde ESTE dispositivo hoy</div>
             </div>
         </div>
 
@@ -138,16 +143,9 @@
             try {
                 const registros = JSON.parse(localStorage.getItem('registros_etg') || '[]');
                 const hoy = new Date().toISOString().split('T')[0];
-                
-                const registrosHoy = registros.filter(r => r.fecha === hoy);
-                const personas = new Set(registrosHoy.map(r => r.nombre)).size;
-                const validados = registrosHoy.filter(r => r.pinValido).length;
+                const registrosHoyLocal = registros.filter(r => r.fecha === hoy);
 
-                document.getElementById('statPresentes').textContent = personas;
-                document.getElementById('statRegistros').textContent = registrosHoy.length;
-                document.getElementById('statValidados').textContent = validados;
-
-                console.log('📊 Estadísticas:', { personas, registros: registrosHoy.length, validados });
+                document.getElementById('statLocal').textContent = registrosHoyLocal.length;
             } catch (error) {
                 console.error('Error actualizando estadísticas:', error);
             }
