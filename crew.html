@@ -300,24 +300,45 @@
             cargosNormalizados[normalizar(nombre)] = { nombreOriginal: nombre, cargo: cargos[nombre] };
         });
 
-        function autocompletarCargo() {
-            const valorInput = document.getElementById('nombreInput').value;
-            const nombreNormalizado = normalizar(valorInput);
-            const match = cargosNormalizados[nombreNormalizado];
+        // Busca a la persona en el roster. Primero coincidencia exacta
+        // (ignorando tildes/mayúsculas). Si no hay, intenta una coincidencia
+        // flexible: todas las palabras escritas deben aparecer, en orden,
+        // dentro de algún nombre completo del roster (ej: "andres munera"
+        // -> "Andres Felipe Munera"). Solo se acepta si hay EXACTAMENTE un
+        // candidato, para no confundir a dos personas con nombres parecidos.
+        function buscarEnRoster(valorInput) {
+            const normalizadoInput = normalizar(valorInput);
+            if (!normalizadoInput) return null;
 
-            if (match) {
-                document.getElementById('cargoDisplay').textContent = match.cargo;
-            } else {
-                document.getElementById('cargoDisplay').textContent = 'Tu cargo';
-            }
+            if (cargosNormalizados[normalizadoInput]) return cargosNormalizados[normalizadoInput];
+
+            const palabrasInput = normalizadoInput.split(/\s+/).filter(Boolean);
+            if (palabrasInput.length < 2) return null; // evita falsos positivos con una sola palabra
+
+            const candidatos = Object.entries(cargosNormalizados).filter(([nombreNorm]) => {
+                const palabrasRoster = nombreNorm.split(/\s+/);
+                let idx = 0;
+                for (const palabra of palabrasRoster) {
+                    if (idx < palabrasInput.length && palabra === palabrasInput[idx]) idx++;
+                }
+                return idx === palabrasInput.length;
+            });
+
+            return candidatos.length === 1 ? candidatos[0][1] : null;
         }
 
-        // Si el texto escrito coincide (ignorando tildes/mayúsculas) con alguien
-        // del roster, siempre usamos el nombre OFICIAL para guardar el registro.
-        // Esto evita que "sebastian caro" y "Sebastian Caro" cuenten como
+        function autocompletarCargo() {
+            const valorInput = document.getElementById('nombreInput').value;
+            const match = buscarEnRoster(valorInput);
+            document.getElementById('cargoDisplay').textContent = match ? match.cargo : 'Tu cargo';
+        }
+
+        // Si el texto escrito coincide con alguien del roster, siempre
+        // usamos el nombre OFICIAL para guardar el registro. Esto evita que
+        // variantes ("sebastian caro", "andres munera") cuenten como
         // personas distintas en el cálculo de horas.
         function obtenerNombreCanonico(valorInput) {
-            const match = cargosNormalizados[normalizar(valorInput)];
+            const match = buscarEnRoster(valorInput);
             return match ? match.nombreOriginal : valorInput.trim();
         }
 
@@ -372,7 +393,16 @@
             pasoActual = 3;
             actualizarPasos();
         }
-        function irPaso4() { pasoActual = 4; actualizarPasos(); }
+        function irPaso4() {
+            const nombreEscrito = document.getElementById('nombreInput').value;
+            const match = buscarEnRoster(nombreEscrito);
+            if (!match) {
+                alert('❌ No encontramos tu nombre en la lista del crew.\n\nEscribe tu nombre y apellido tal como te conocen en el equipo (ej: "Andres Munera" o "Andres Felipe Munera"), o avísale al admin si tu nombre no está registrado.');
+                return;
+            }
+            pasoActual = 4;
+            actualizarPasos();
+        }
         function irPaso5() {
             pasoActual = 5;
             document.getElementById('resumenTipo').textContent = tipoSeleccionado === 'entrada' ? '🟢 ENTRADA' : '🔴 SALIDA';
