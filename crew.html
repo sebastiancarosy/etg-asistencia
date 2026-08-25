@@ -224,6 +224,7 @@
             <div class="photo-preview" id="photoPreview">
                 📷 Cámara frontal
             </div>
+            <div id="fotoTamanoInfo" style="text-align: center; font-size: 12px; color: #999; margin-bottom: 15px;"></div>
             <input type="file" id="fotoInput" accept="image/*" capture="user" onchange="mostrarFoto()">
             <button class="btn btn-secondary" onclick="irPaso3()">← Atrás</button>
             <button class="btn btn-primary" onclick="irPaso5()">SIGUIENTE →</button>
@@ -311,6 +312,15 @@
             }
         }
 
+        // Si el texto escrito coincide (ignorando tildes/mayúsculas) con alguien
+        // del roster, siempre usamos el nombre OFICIAL para guardar el registro.
+        // Esto evita que "sebastian caro" y "Sebastian Caro" cuenten como
+        // personas distintas en el cálculo de horas.
+        function obtenerNombreCanonico(valorInput) {
+            const match = cargosNormalizados[normalizar(valorInput)];
+            return match ? match.nombreOriginal : valorInput.trim();
+        }
+
         function llenarSugerenciasNombres() {
             const datalist = document.getElementById('listaCrew');
             datalist.innerHTML = '';
@@ -373,18 +383,92 @@
         }
 
         let fotoBase64 = null;
+        const FOTO_MAX_KB = 400;
 
         function mostrarFoto() {
             const input = document.getElementById('fotoInput');
             const preview = document.getElementById('photoPreview');
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    fotoBase64 = e.target.result;
+            if (!(input.files && input.files[0])) return;
+
+            preview.innerHTML = '⏳ Procesando foto...';
+
+            const archivo = input.files[0];
+            const imagenTemp = new Image();
+            const urlTemp = URL.createObjectURL(archivo);
+
+            imagenTemp.onload = () => {
+                comprimirImagen(imagenTemp).then(({ dataUrl, kb }) => {
+                    fotoBase64 = dataUrl;
                     preview.innerHTML = `<img src="${fotoBase64}" alt="Foto">`;
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
+                    document.getElementById('fotoTamanoInfo').textContent = `✅ Foto lista (${kb} KB)`;
+                    console.log(`✅ Foto comprimida a ${kb} KB`);
+                }).catch(err => {
+                    console.error('Error comprimiendo foto, se usa original:', err);
+                    // Respaldo: si algo falla, al menos usar la foto sin comprimir
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        fotoBase64 = e.target.result;
+                        preview.innerHTML = `<img src="${fotoBase64}" alt="Foto">`;
+                    };
+                    reader.readAsDataURL(archivo);
+                }).finally(() => URL.revokeObjectURL(urlTemp));
+            };
+            imagenTemp.src = urlTemp;
+        }
+
+        // Redimensiona y reduce calidad JPEG iterativamente hasta quedar bajo FOTO_MAX_KB
+        function comprimirImagen(img) {
+            return new Promise((resolve, reject) => {
+                const dimensiones = [1024, 800, 640, 480];
+                const calidades = [0.8, 0.6, 0.45, 0.3];
+
+                function intentar(dimIdx, calIdx) {
+                    if (dimIdx >= dimensiones.length) {
+                        // Se acabaron los intentos: usar el último resultado igual
+                        dimIdx = dimensiones.length - 1;
+                        calIdx = calidades.length - 1;
+                    }
+
+                    const maxLado = dimensiones[dimIdx];
+                    const calidad = calidades[calIdx];
+
+                    let ancho = img.naturalWidth || img.width;
+                    let alto = img.naturalHeight || img.height;
+                    if (ancho > alto && ancho > maxLado) {
+                        alto = Math.round(alto * (maxLado / ancho));
+                        ancho = maxLado;
+                    } else if (alto > maxLado) {
+                        ancho = Math.round(ancho * (maxLado / alto));
+                        alto = maxLado;
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = ancho;
+                    canvas.height = alto;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, ancho, alto);
+
+                    canvas.toBlob((blob) => {
+                        if (!blob) { reject(new Error('No se pudo generar el blob')); return; }
+                        const kb = Math.round(blob.size / 1024);
+
+                        const esUltimoIntento = (dimIdx === dimensiones.length - 1 && calIdx === calidades.length - 1);
+
+                        if (kb <= FOTO_MAX_KB || esUltimoIntento) {
+                            const lector = new FileReader();
+                            lector.onload = (e) => resolve({ dataUrl: e.target.result, kb });
+                            lector.onerror = reject;
+                            lector.readAsDataURL(blob);
+                        } else if (calIdx < calidades.length - 1) {
+                            intentar(dimIdx, calIdx + 1);
+                        } else {
+                            intentar(dimIdx + 1, 0);
+                        }
+                    }, 'image/jpeg', calidad);
+                }
+
+                intentar(0, 0);
+            });
         }
 
         async function enviarRegistro() {
@@ -394,10 +478,10 @@
 
             const ahora = new Date();
             const registro = {
-                nombre: document.getElementById('nombreInput').value || '-',
+                nombre: obtenerNombreCanonico(document.getElementById('nombreInput').value) || '-',
                 cargo: document.getElementById('cargoDisplay').textContent || '-',
                 tipo: tipoSeleccionado || 'entrada',
-                fecha: ahora.toISOString().split('T')[0],
+                fecha: `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-${String(ahora.getDate()).padStart(2, '0')}`,
                 hora: ahora.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }),
                 pinValido: true,
                 fotoBase64: fotoBase64,
