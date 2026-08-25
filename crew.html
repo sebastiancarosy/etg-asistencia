@@ -73,7 +73,7 @@
             padding: 12px;
             border: 1px solid #ddd;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 16px;
             margin-bottom: 15px;
             font-family: inherit;
         }
@@ -177,7 +177,7 @@
                 El admin está mostrando 6 dígitos en pantalla grande.<br>
                 <strong style="color: #9C27B0;">El admin te dirá el código. Escribe los 6 dígitos:</strong>
             </p>
-            <input type="text" id="pinInput" placeholder="000000" maxlength="6" oninput="validarPIN()">
+            <input type="text" id="pinInput" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="000000" maxlength="6" oninput="validarPIN()">
             <div id="pinMessage"></div>
             <button class="btn btn-primary" onclick="irPaso2()">SIGUIENTE →</button>
         </div>
