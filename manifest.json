@@ -2,8 +2,8 @@
   "name": "ETG Asistencia - Sistema de Auditoría",
   "short_name": "ETG",
   "description": "Sistema de auditoría con PIN dinámico para control de asistencia del equipo ETG - Sebastián Yatra",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#ffffff",
@@ -34,7 +34,7 @@
       "name": "Registrar Asistencia",
       "short_name": "Registro",
       "description": "Acceso rápido para registrar entrada/salida",
-      "url": "/crew.html",
+      "url": "./crew.html",
       "icons": [
         {
           "src": "icon-192x192.png",
@@ -46,7 +46,7 @@
       "name": "Panel Admin",
       "short_name": "Admin",
       "description": "Acceso al panel de administración",
-      "url": "/admin.html",
+      "url": "./admin.html",
       "icons": [
         {
           "src": "icon-192x192.png",

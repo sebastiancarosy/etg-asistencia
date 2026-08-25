@@ -1,11 +1,17 @@
-const CACHE_NAME = 'etg-asistencia-v1';
+const CACHE_NAME = 'etg-asistencia-v2';
 const urlsToCache = [
-  '/',
-  '/admin.html',
-  '/crew.html',
-  '/dashboard.html',
-  '/config.js',
-  '/manifest.json'
+  './index.html',
+  './admin.html',
+  './crew.html',
+  './dashboard-sheets.html',
+  './config.js',
+  './google-config.js',
+  './crew-pin-sheets.js',
+  './sheets-sync.js',
+  './otpauth.umd.min.js',
+  './manifest.json',
+  './icon-192x192.png',
+  './icon-512x512.png'
 ];
 
 // Install event - cache files
